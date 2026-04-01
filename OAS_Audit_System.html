@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAS Operational Audit System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#0d1b2a;--navy-mid:#1b2e45;--navy-light:#243b55;--teal:#1bc6b4;--teal-dark:#12a090;--gold:#f4c542;--danger:#e85d5d;--success:#2dd4a0;--text:#e8edf2;--text-muted:#7f9ab0;--card:rgba(27,46,69,0.85);--border:rgba(27,198,180,0.18);--shadow:0 8px 32px rgba(0,0,0,0.35);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--navy);color:var(--text);min-height:100vh;background-image:radial-gradient(ellipse at 20% 0%,rgba(27,198,180,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(244,197,66,.06) 0%,transparent 60%);}
+header{background:linear-gradient(135deg,var(--navy-mid),var(--navy-light));border-bottom:1.5px solid var(--border);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+.logo{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:40px;height:40px;background:var(--teal);border-radius:10px;display:grid;place-items:center;font-size:20px;}
+.logo-text{font-family:'DM Serif Display',serif;font-size:1.3rem;}
+.logo-sub{font-size:.72rem;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;margin-top:-2px;}
+nav{display:flex;gap:6px;}
+nav button{background:transparent;border:none;padding:8px 16px;border-radius:8px;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;transition:all .2s;}
+nav button:hover{background:var(--border);color:var(--text);}
+nav button.active{background:var(--teal);color:var(--navy);}
+main{max-width:1100px;margin:0 auto;padding:36px 24px;}
+.page{display:none;}.page.active{display:block;}
+.section-title{font-family:'DM Serif Display',serif;font-size:1.9rem;margin-bottom:6px;}
+.section-sub{color:var(--text-muted);font-size:.9rem;margin-bottom:32px;}
+.card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:24px;backdrop-filter:blur(8px);box-shadow:var(--shadow);}
+.card-title{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);font-weight:600;margin-bottom:18px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr;}}
+label{display:block;font-size:.82rem;color:var(--text-muted);margin-bottom:6px;font-weight:500;}
+select,input[type=date],textarea{width:100%;background:rgba(13,27,42,.7);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%237f9ab0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;}
+select:focus,input[type=date]:focus,textarea:focus{border-color:var(--teal);}
+select option{background:var(--navy-mid);}
+textarea{resize:vertical;min-height:70px;line-height:1.6;}
+/* QUESTION ROW */
+.cat-header{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.cat-pill{padding:4px 14px;border-radius:20px;font-size:.78rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+.cat-score-lbl{margin-left:auto;font-size:.85rem;color:var(--text-muted);}
+.cat-score-lbl span{color:var(--teal);font-weight:600;}
+.q-row{padding:16px 0;border-bottom:1px solid rgba(27,198,180,.08);}
+.q-row:last-child{border-bottom:none;}
+.q-main{display:grid;grid-template-columns:1fr auto;align-items:start;gap:16px;}
+.q-text{font-size:.9rem;font-weight:500;margin-bottom:4px;}
+.q-def{font-size:.78rem;color:var(--text-muted);line-height:1.5;}
+.toggle-group{display:flex;gap:6px;flex-shrink:0;}
+.toggle-btn{padding:7px 18px;border-radius:8px;border:1.5px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;transition:all .18s;}
+.toggle-btn:hover{border-color:var(--teal);color:var(--teal);}
+.toggle-btn.yes.active{background:var(--success);border-color:var(--success);color:var(--navy);}
+.toggle-btn.no.active{background:var(--danger);border-color:var(--danger);color:#fff;}
+/* NO PANEL */
+.no-panel{margin-top:12px;background:rgba(232,93,93,.06);border:1px solid rgba(232,93,93,.22);border-radius:10px;padding:14px;display:none;animation:fadeUp .2s ease;}
+.no-panel.visible{display:block;}
+.no-panel label{color:#f4a0a0;margin-bottom:8px;}
+.no-panel textarea{background:rgba(13,27,42,.6);border-color:rgba(232,93,93,.25);min-height:64px;}
+.no-panel textarea:focus{border-color:var(--danger);}
+.photo-upload-area{border:1.5px dashed rgba(232,93,93,.35);border-radius:8px;padding:10px 14px;margin-top:10px;cursor:pointer;text-align:center;color:#f4a0a0;font-size:.82rem;transition:border-color .2s;user-select:none;}
+.photo-upload-area:hover{border-color:var(--danger);background:rgba(232,93,93,.04);}
+.photo-preview{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+.photo-thumb{position:relative;width:74px;height:74px;border-radius:8px;overflow:hidden;border:1px solid rgba(232,93,93,.3);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.photo-thumb .rm-photo{position:absolute;top:2px;right:2px;background:rgba(200,30,30,.85);border:none;color:#fff;border-radius:4px;width:18px;height:18px;cursor:pointer;font-size:10px;display:flex;align-items:center;justify-content:center;line-height:1;}
+/* SCORE */
+.score-panel{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:28px;}
+.score-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;text-align:center;box-shadow:var(--shadow);}
+.score-big{font-family:'DM Serif Display',serif;font-size:2.6rem;line-height:1;}
+.score-label{font-size:.76rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;margin-top:6px;}
+.grade-A{color:var(--success);}.grade-B{color:var(--teal);}.grade-C{color:var(--gold);}.grade-D{color:var(--danger);}
+.progress-bar{height:8px;background:rgba(255,255,255,.06);border-radius:8px;overflow:hidden;margin:8px 0 4px;}
+.progress-fill{height:100%;border-radius:8px;background:linear-gradient(90deg,var(--teal),var(--success));transition:width .4s ease;}
+.progress-meta{display:flex;justify-content:space-between;font-size:.76rem;color:var(--text-muted);}
+/* BUTTONS */
+.btn-primary{background:var(--teal);color:var(--navy);border:none;padding:13px 32px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.02em;}
+.btn-primary:hover{background:var(--teal-dark);transform:translateY(-1px);box-shadow:0 6px 20px rgba(27,198,180,.3);}
+.btn-secondary{background:transparent;color:var(--teal);border:1.5px solid var(--teal);padding:11px 24px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-secondary:hover{background:rgba(27,198,180,.08);}
+.btn-pdf{background:linear-gradient(135deg,#c94040,#e85d5d);color:#fff;border:none;padding:12px 26px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+.btn-pdf:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(232,93,93,.35);}
+/* HISTORY */
+.history-filters{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px;align-items:flex-end;}
+.history-filters>div{flex:1;min-width:150px;}
+table{width:100%;border-collapse:collapse;font-size:.86rem;}
+th{text-align:left;padding:10px 14px;color:var(--text-muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.1em;border-bottom:1px solid var(--border);font-weight:600;}
+td{padding:12px 14px;border-bottom:1px solid rgba(27,198,180,.07);vertical-align:middle;}
+tr:hover td{background:rgba(27,198,180,.04);}
+.badge{display:inline-block;padding:3px 10px;border-radius:6px;font-size:.76rem;font-weight:700;}
+.badge-A{background:rgba(45,212,160,.15);color:var(--success);}
+.badge-B{background:rgba(27,198,180,.15);color:var(--teal);}
+.badge-C{background:rgba(244,197,66,.15);color:var(--gold);}
+.badge-D{background:rgba(232,93,93,.15);color:var(--danger);}
+.chart-container{position:relative;height:220px;margin-top:12px;}
+.empty-state{text-align:center;padding:52px;color:var(--text-muted);}
+.empty-state .icon{font-size:3rem;margin-bottom:12px;}
+.empty-state p{font-size:.9rem;}
+#toast{position:fixed;bottom:28px;right:28px;background:var(--success);color:var(--navy);padding:14px 24px;border-radius:12px;font-weight:700;font-size:.9rem;transform:translateY(80px);opacity:0;transition:all .3s;z-index:999;}
+#toast.show{transform:translateY(0);opacity:1;}
+.breakdown-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+@media(max-width:600px){.breakdown-grid{grid-template-columns:1fr;}}
+.breakdown-item{background:rgba(13,27,42,.5);border-radius:10px;padding:14px;border:1px solid var(--border);}
+.breakdown-item .cat-name{font-size:.78rem;color:var(--text-muted);margin-bottom:6px;}
+.breakdown-item .cat-val{font-size:1.1rem;font-weight:700;}
+.delete-btn{background:transparent;border:none;color:var(--text-muted);cursor:pointer;padding:4px 8px;border-radius:6px;font-size:.82rem;transition:color .2s;}
+.delete-btn:hover{color:var(--danger);}
+/* PDF CONFIG */
+.pdf-config-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:20px;}
+@media(max-width:700px){.pdf-config-grid{grid-template-columns:1fr;}}
+/* SUMMARY */
+.summary-comment-box textarea{min-height:90px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.score-card{animation:fadeUp .4s ease both;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🎯</div>
+    <div>
+      <div class="logo-text">OAS Audit System</div>
+      <div class="logo-sub">Operational Assessment Platform</div>
+    </div>
+  </div>
+  <nav>
+    <button class="active" onclick="showPage('audit',this)">New Audit</button>
+    <button onclick="showPage('history',this)">History</button>
+    <button onclick="showPage('dashboard',this)">Dashboard</button>
+    <button onclick="showPage('reports',this)">PDF Reports</button>
+  </nav>
+</header>
+
+<main>
+
+<!-- ===== AUDIT PAGE ===== -->
+<div class="page active" id="page-audit">
+  <div class="section-title">New Operational Audit</div>
+  <div class="section-sub">Complete all 20 questions. For any NO answer, attach photos and add remarks. A summary comment can be added at the end.</div>
+
+  <div class="card">
+    <div class="card-title">Outlet &amp; Date Selection</div>
+    <div class="form-grid">
+      <div>
+        <label>Country</label>
+        <select id="sel-country" onchange="updateOutlets('sel-outlet','sel-country')">
+          <option value="">— Select Country —</option>
+          <option value="Singapore">🇸🇬 Singapore</option>
+          <option value="Malaysia">🇲🇾 Malaysia</option>
+          <option value="Hong Kong">🇭🇰 Hong Kong</option>
+          <option value="Indonesia">🇮🇩 Indonesia</option>
+          <option value="Thailand">🇹🇭 Thailand</option>
+        </select>
+      </div>
+      <div>
+        <label>Outlet</label>
+        <select id="sel-outlet"><option value="">— Select Country First —</option></select>
+      </div>
+      <div>
+        <label>Audit Date</label>
+        <input type="date" id="sel-date">
+      </div>
+    </div>
+  </div>
+
+  <div class="score-panel">
+    <div class="score-card" style="animation-delay:0s"><div class="score-big grade-A" id="live-score">0</div><div class="score-label">Total Score / 20</div></div>
+    <div class="score-card" style="animation-delay:.08s"><div class="score-big" id="live-pct" style="color:var(--teal)">0%</div><div class="score-label">Pass Rate</div></div>
+    <div class="score-card" style="animation-delay:.16s"><div class="score-big" id="live-grade" style="color:var(--text-muted)">—</div><div class="score-label">Grade</div></div>
+  </div>
+  <div class="card" style="padding:20px 28px">
+    <div class="progress-meta"><span>Progress</span><span id="live-answered">0 / 20 answered</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div id="questions-container"></div>
+
+  <!-- Summary Comment -->
+  <div class="card">
+    <div class="card-title">Summary Comment</div>
+    <div class="summary-comment-box">
+      <label>Overall observations, commendations, or recommended actions for this audit:</label>
+      <textarea id="summary-comment" placeholder="Enter your overall summary, key findings, recommended actions, or commendations for this outlet…"></textarea>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+    <button class="btn-secondary" onclick="resetAudit()">Reset</button>
+    <button class="btn-primary" onclick="submitAudit()">💾 Save Audit Record</button>
+  </div>
+</div>
+
+<!-- ===== HISTORY PAGE ===== -->
+<div class="page" id="page-history">
+  <div class="section-title">Audit History</div>
+  <div class="section-sub">View, filter and review all saved audit records.</div>
+  <div class="card">
+    <div class="card-title">Filter Records</div>
+    <div class="history-filters">
+      <div><label>Country</label>
+        <select id="h-country" onchange="hCountryChange()">
+          <option value="">All Countries</option>
+          <option value="Singapore">Singapore</option><option value="Malaysia">Malaysia</option>
+          <option value="Hong Kong">Hong Kong</option><option value="Indonesia">Indonesia</option><option value="Thailand">Thailand</option>
+        </select></div>
+      <div><label>Outlet</label><select id="h-outlet" onchange="renderHistory()"><option value="">All Outlets</option></select></div>
+      <div><label>From</label><input type="date" id="h-from" onchange="renderHistory()"></div>
+      <div><label>To</label><input type="date" id="h-to" onchange="renderHistory()"></div>
+      <div style="display:flex;align-items:flex-end;"><button class="btn-secondary" onclick="exportCSV()">⬇ Export CSV</button></div>
+    </div>
+    <div id="history-table-wrap"><div class="empty-state"><div class="icon">📋</div><p>No records saved yet. Complete an audit to get started.</p></div></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD PAGE ===== -->
+<div class="page" id="page-dashboard">
+  <div class="section-title">Performance Dashboard</div>
+  <div class="section-sub">Monthly trends and outlet comparisons across all saved records.</div>
+  <div class="card">
+    <div class="card-title">Filter View</div>
+    <div class="history-filters">
+      <div><label>Country</label>
+        <select id="d-country" onchange="dCountryChange()">
+          <option value="">All Countries</option>
+          <option value="Singapore">Singapore</option><option value="Malaysia">Malaysia</option>
+          <option value="Hong Kong">Hong Kong</option><option value="Indonesia">Indonesia</option><option value="Thailand">Thailand</option>
+        </select></div>
+      <div><label>Outlet</label><select id="d-outlet" onchange="updateDashboard()"><option value="">All Outlets</option></select></div>
+    </div>
+  </div>
+  <div class="score-panel">
+    <div class="score-card"><div class="score-big" id="d-audits" style="color:var(--teal)">0</div><div class="score-label">Total Audits</div></div>
+    <div class="score-card"><div class="score-big grade-A" id="d-avg">—</div><div class="score-label">Avg Score / 20</div></div>
+    <div class="score-card"><div class="score-big" id="d-trend" style="color:var(--text-muted)">—</div><div class="score-label">Monthly Trend</div></div>
+  </div>
+  <div class="card"><div class="card-title">Score Trend Over Time</div><div class="chart-container"><canvas id="trend-chart"></canvas></div></div>
+  <div class="card"><div class="card-title">Category Performance Breakdown</div><div class="breakdown-grid" id="cat-breakdown"></div></div>
+  <div class="card"><div class="card-title">Outlet Comparison (Last 3 Months)</div><div class="chart-container"><canvas id="outlet-chart"></canvas></div></div>
+</div>
+
+<!-- ===== PDF REPORTS PAGE ===== -->
+<div class="page" id="page-reports">
+  <div class="section-title">PDF Report Generator</div>
+  <div class="section-sub">Generate formatted audit reports by country or outlet for email distribution to country teams.</div>
+
+  <div class="card">
+    <div class="card-title">Report Configuration</div>
+    <div class="pdf-config-grid">
+      <div>
+        <label>Country</label>
+        <select id="pdf-country" onchange="pdfCountryChange()">
+          <option value="">All Countries</option>
+          <option value="Singapore">🇸🇬 Singapore</option><option value="Malaysia">🇲🇾 Malaysia</option>
+          <option value="Hong Kong">🇭🇰 Hong Kong</option><option value="Indonesia">🇮🇩 Indonesia</option><option value="Thailand">🇹🇭 Thailand</option>
+        </select>
+      </div>
+      <div>
+        <label>Outlet <span style="color:var(--text-muted);font-size:.75rem">(leave blank for full country)</span></label>
+        <select id="pdf-outlet"><option value="">All Outlets in Country</option></select>
+      </div>
+      <div>
+        <label>Date Range</label>
+        <select id="pdf-range">
+          <option value="1">Last 1 Month</option>
+          <option value="3" selected>Last 3 Months</option>
+          <option value="6">Last 6 Months</option>
+          <option value="12">Last 12 Months</option>
+          <option value="0">All Time</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+      <button class="btn-pdf" onclick="generatePDF()">📄 Generate &amp; Download PDF</button>
+      <span id="pdf-status" style="font-size:.83rem;color:var(--text-muted)"></span>
+    </div>
+  </div>
+
+  <div class="card" style="background:rgba(27,46,69,.4);border-style:dashed;">
+    <div class="card-title">How to use</div>
+    <p style="font-size:.86rem;color:var(--text-muted);line-height:1.7;">
+      1. Select the <strong style="color:var(--text)">Country</strong> you want to report on (or leave blank for all countries).<br>
+      2. Optionally narrow to a specific <strong style="color:var(--text)">Outlet</strong> for a single-outlet report.<br>
+      3. Choose the <strong style="color:var(--text)">Date Range</strong> to cover.<br>
+      4. Click <strong style="color:var(--teal)">Generate &amp; Download PDF</strong> — the report will download automatically.<br>
+      5. Attach the PDF to your email and send to the relevant country team.
+    </p>
+  </div>
+</div>
+
+</main>
+<div id="toast">✓ Audit saved successfully!</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ============================================================
+// CONSTANTS
+// ============================================================
+const OUTLETS={
+  "Singapore":["KMS","KJP","KPG","KWL","BCCK","KSPO","KJE","KPRV","BTP"],
+  "Malaysia":["Bouncetopia Toppen","Kiztopia Mid Valley Mall","Bouncetopia Setia","Xventure The Light City"],
+  "Hong Kong":["Kiztopia NTP","Kiztopia PC","Kiztopia HM","Bouncetopia Airside","Bouncetopia Olympian City","Xventure Kornhill Plaza"],
+  "Indonesia":["Kiztopia Agora Mall"],
+  "Thailand":["Kiztopia Central Westgate","Bouncetopia Hat Yai","Bouncetopia Chiang Mai","Xventure Chiang Mai","Xventure Khon Kaen"]
+};
+
+const CATEGORIES=[
+  {name:"Safety & Risk Management",color:"#e85d5d",questions:[
+    {q:"Are all safety and play signages present and clearly visible?",def:"Check: All required safety/play signs are installed at correct locations, clearly visible, readable, and undamaged. Score NO if any signage is missing, obstructed, or damaged."},
+    {q:"Are all play equipment and structures in safe working condition?",def:"Check: Play equipment shows no visible damage, loose parts, exposed screws, broken padding, or instability. Score NO if any safety hazard is observed."},
+    {q:"Are staff actively supervising high-risk play areas?",def:"Check: Staff are physically present at high-risk zones and actively watching guest activity. Score NO if staff are absent, on their phone, chatting, or not monitoring."},
+    {q:"Are safety rules being enforced by staff?",def:"Check: Staff intervene or remind guests when unsafe behaviour occurs. Score NO if unsafe behaviour is observed and staff do not respond."},
+    {q:"Are emergency procedures visible and accessible to staff?",def:"Check: Emergency procedures or contact info (evacuation plan, first aid kit location) are available and accessible. Score NO if procedures are not visible or staff are unaware of them."}
+  ]},
+  {name:"Operational Standards",color:"#1bc6b4",questions:[
+    {q:"Is the front counter organized and operating smoothly?",def:"Check: Front counter is clean, organized, and equipped with required items (POS system, wristbands, waiver system, etc.). Score NO if counter is cluttered or materials are missing."},
+    {q:"Are all play areas open and ready for guest use?",def:"Check: All play zones are operational, accessible, and safe. Score NO if any area is closed due to operational negligence or is not ready for guests."},
+    {q:"Are queue and waiting areas properly managed?",def:"Check: Queue/waiting areas are orderly, clearly designated, and have sufficient space or barriers. Score NO if the area is disorganized."},
+    {q:"Are birthday/party rooms clean and ready for use?",def:"Check: Birthday or party rooms are clean, organized, and properly prepared per operational standards. Score NO if rooms are messy or unprepared."},
+    {q:"Are operational SOPs being followed by the team?",def:"Check: Staff demonstrate procedures consistent with standard operating procedures (SOP). Score NO if clear deviations from SOP are observed."}
+  ]},
+  {name:"Cleanliness & Maintenance",color:"#f4c542",questions:[
+    {q:"Are play areas clean and well maintained?",def:"Check: Play areas, mats, and surrounding areas are clean and free from visible dirt, spills, or debris. Score NO if cleanliness standards are not met."},
+    {q:"Is the entrance and reception area clean and presentable?",def:"Check: Entrance and reception are clean, tidy, and presentable with no clutter or visible dirt. Score NO if the area appears neglected."},
+    {q:"Are there no visible damages in play areas?",def:"Check: Equipment and structures show no broken parts, torn padding, or loose fixtures. Score NO if any defects are observed."},
+    {q:"Is there evidence that routine inspection of play equipment is conducted?",def:"Check: Inspection checklist or maintenance log is completed and up to date. Score NO if documentation is missing or outdated."},
+    {q:"Are cleaning tools and materials properly stored?",def:"Check: Cleaning tools are stored neatly in designated areas and not exposed to guests. Score NO if tools are left unattended in public areas."}
+  ]},
+  {name:"Staff Knowledge",color:"#a78bfa",questions:[
+    {q:"Can staff explain the basic safety rules of their deployed area?",def:"Check: Staff can clearly explain the key safety rules for the play area they supervise. Score NO if staff cannot explain the rules."},
+    {q:"Do staff know the correct procedure if a child gets injured?",def:"Check: Staff can explain what to do if a child is injured — assist guest, notify supervisor, first aid response, incident reporting. Score NO if staff are unsure of the procedure."},
+    {q:"Do staff know who to escalate incidents to?",def:"Check: Staff can identify the escalation chain (Supervisor, SIC, or Manager on duty). Score NO if staff cannot identify who to escalate to."},
+    {q:"Do staff know how to handle guest complaints correctly?",def:"Check: Staff can describe the correct approach — listen, assist, escalate when needed. Score NO if staff are unsure how to handle complaints."},
+    {q:"Are staff alert and present on the floor?",def:"Check: Staff are attentive, in operational areas, and not distracted by phones or non-work activities. Score NO if staff appear disengaged."}
+  ]}
+];
+
+const CAT_COLORS={"Safety & Risk Management":[232,93,93],"Operational Standards":[27,198,180],"Cleanliness & Maintenance":[244,197,66],"Staff Knowledge":[167,139,250]};
+
+// State
+let answers={}, remarks={}, photos={};
+let trendChart=null, outletChart=null;
+
+// ============================================================
+// STORAGE
+// ============================================================
+function loadRecords(){try{return JSON.parse(localStorage.getItem('oas_audit_records')||'[]');}catch(e){return [];}}
+function saveRecords(r){localStorage.setItem('oas_audit_records',JSON.stringify(r));}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(name==='history') renderHistory();
+  if(name==='dashboard') updateDashboard();
+}
+
+// ============================================================
+// OUTLET DROPDOWNS
+// ============================================================
+function updateOutlets(targetId,countryId){
+  const country=document.getElementById(countryId).value;
+  const sel=document.getElementById(targetId);
+  if(country&&OUTLETS[country]) sel.innerHTML=OUTLETS[country].map(o=>`<option value="${o}">${o}</option>`).join('');
+  else sel.innerHTML='<option value="">— Select Country First —</option>';
+}
+function hCountryChange(){
+  const c=document.getElementById('h-country').value;
+  const sel=document.getElementById('h-outlet');
+  sel.innerHTML='<option value="">All Outlets</option>'+(c&&OUTLETS[c]?OUTLETS[c].map(o=>`<option value="${o}">${o}</option>`).join(''):'');
+  renderHistory();
+}
+function dCountryChange(){
+  const c=document.getElementById('d-country').value;
+  const sel=document.getElementById('d-outlet');
+  sel.innerHTML='<option value="">All Outlets</option>'+(c&&OUTLETS[c]?OUTLETS[c].map(o=>`<option value="${o}">${o}</option>`).join(''):'');
+  updateDashboard();
+}
+function pdfCountryChange(){
+  const c=document.getElementById('pdf-country').value;
+  const sel=document.getElementById('pdf-outlet');
+  sel.innerHTML='<option value="">All Outlets in Country</option>'+(c&&OUTLETS[c]?OUTLETS[c].map(o=>`<option value="${o}">${o}</option>`).join(''):'');
+}
+
+document.getElementById('sel-date').value=new Date().toISOString().split('T')[0];
+
+// ============================================================
+// BUILD QUESTIONS
+// ============================================================
+function buildQuestions(){
+  const container=document.getElementById('questions-container');
+  container.innerHTML='';
+  let qNum=1;
+  CATEGORIES.forEach((cat,ci)=>{
+    const block=document.createElement('div');
+    block.className='card';
+    let qHTML='';
+    cat.questions.forEach((item,qi)=>{
+      const key=`${ci}-${qi}`;
+      qHTML+=`<div class="q-row" id="qrow-${key}">
+        <div class="q-main">
+          <div>
+            <div class="q-text">Q${qNum}. ${item.q}</div>
+            <div class="q-def">${item.def}</div>
+          </div>
+          <div class="toggle-group">
+            <button class="toggle-btn yes" onclick="setAnswer(${ci},${qi},'yes',this)">YES</button>
+            <button class="toggle-btn no" onclick="setAnswer(${ci},${qi},'no',this)">NO</button>
+          </div>
+        </div>
+        <div class="no-panel" id="nopanel-${key}">
+          <label>📝 Remarks <span style="font-size:.75rem;opacity:.8">(describe the issue observed)</span></label>
+          <textarea id="remark-${key}" placeholder="Describe what was observed and the specific issue found…" oninput="remarks['${key}']=this.value"></textarea>
+          <div class="photo-upload-area" onclick="document.getElementById('file-${key}').click()">
+            📷 Tap to attach supporting photos
+            <input type="file" id="file-${key}" accept="image/*" multiple style="display:none" onchange="handlePhotos('${key}',this)">
+          </div>
+          <div class="photo-preview" id="preview-${key}"></div>
+        </div>
+      </div>`;
+      qNum++;
+    });
+    block.innerHTML=`<div class="cat-header">
+      <span class="cat-pill" style="background:${cat.color}22;color:${cat.color}">${cat.name}</span>
+      <span class="cat-score-lbl">Score: <span id="cat-score-${ci}">0</span> / ${cat.questions.length}</span>
+    </div>${qHTML}`;
+    container.appendChild(block);
+  });
+}
+
+function setAnswer(ci,qi,val,btn){
+  const key=`${ci}-${qi}`;
+  answers[key]=val;
+  btn.parentElement.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const panel=document.getElementById(`nopanel-${key}`);
+  if(val==='no') panel.classList.add('visible');
+  else panel.classList.remove('visible');
+  updateScores();
+}
+
+function handlePhotos(key,input){
+  if(!photos[key]) photos[key]=[];
+  Array.from(input.files).forEach(file=>{
+    const reader=new FileReader();
+    reader.onload=e=>{photos[key].push(e.target.result); renderPreviews(key);};
+    reader.readAsDataURL(file);
+  });
+  input.value='';
+}
+
+function renderPreviews(key){
+  const wrap=document.getElementById(`preview-${key}`);
+  if(!wrap) return;
+  wrap.innerHTML=(photos[key]||[]).map((src,i)=>`<div class="photo-thumb"><img src="${src}"><button class="rm-photo" onclick="removePhoto('${key}',${i})">✕</button></div>`).join('');
+}
+
+function removePhoto(key,idx){photos[key].splice(idx,1); renderPreviews(key);}
+
+function updateScores(){
+  let total=0,answered=0;
+  CATEGORIES.forEach((cat,ci)=>{
+    let cs=0;
+    cat.questions.forEach((_,qi)=>{
+      const key=`${ci}-${qi}`;
+      if(answers[key]!==undefined){answered++; if(answers[key]==='yes'){cs++;total++;}}
+    });
+    const el=document.getElementById(`cat-score-${ci}`);
+    if(el) el.textContent=cs;
+  });
+  const pct=Math.round((total/20)*100);
+  const grade=pct>=90?'A':pct>=75?'B':pct>=60?'C':'D';
+  document.getElementById('live-score').textContent=total;
+  document.getElementById('live-pct').textContent=pct+'%';
+  const gEl=document.getElementById('live-grade');
+  gEl.textContent=grade;
+  gEl.style.color={A:'var(--success)',B:'var(--teal)',C:'var(--gold)',D:'var(--danger)'}[grade];
+  document.getElementById('prog-fill').style.width=(answered/20*100)+'%';
+  document.getElementById('live-answered').textContent=`${answered} / 20 answered`;
+}
+
+function resetAudit(){
+  answers={}; remarks={}; photos={};
+  document.querySelectorAll('.toggle-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.no-panel').forEach(p=>p.classList.remove('visible'));
+  document.querySelectorAll('.no-panel textarea').forEach(t=>t.value='');
+  document.querySelectorAll('.photo-preview').forEach(p=>p.innerHTML='');
+  document.getElementById('summary-comment').value='';
+  updateScores();
+}
+
+// ============================================================
+// SUBMIT
+// ============================================================
+function submitAudit(){
+  const country=document.getElementById('sel-country').value;
+  const outlet=document.getElementById('sel-outlet').value;
+  const date=document.getElementById('sel-date').value;
+  if(!country||!outlet||!date){alert('Please select country, outlet, and date.');return;}
+  const answered=Object.keys(answers).length;
+  if(answered<20&&!confirm(`Only ${answered}/20 answered. Save anyway?`)) return;
+
+  let total=0;
+  const catScores={}, qDetails=[];
+  let qNum=1;
+  CATEGORIES.forEach((cat,ci)=>{
+    let s=0;
+    cat.questions.forEach((item,qi)=>{
+      const key=`${ci}-${qi}`;
+      const ans=answers[key];
+      if(ans==='yes') s++;
+      qDetails.push({num:qNum++,category:cat.name,question:item.q,answer:ans||'unanswered',remark:remarks[key]||'',photos:(photos[key]||[]).slice()});
+    });
+    catScores[cat.name]=s; total+=s;
+  });
+  const pct=Math.round((total/20)*100);
+  const grade=pct>=90?'A':pct>=75?'B':pct>=60?'C':'D';
+  const summaryComment=document.getElementById('summary-comment').value.trim();
+  const record={id:Date.now(),country,outlet,date,total,pct,grade,catScores,answers:{...answers},qDetails,summaryComment,answeredCount:answered};
+  const records=loadRecords(); records.push(record); saveRecords(records);
+  showToast(); resetAudit();
+}
+
+function showToast(){const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+
+// ============================================================
+// HISTORY
+// ============================================================
+function renderHistory(){
+  const hC=document.getElementById('h-country').value,hO=document.getElementById('h-outlet').value;
+  const hF=document.getElementById('h-from').value,hT=document.getElementById('h-to').value;
+  let recs=loadRecords();
+  if(hC) recs=recs.filter(r=>r.country===hC);
+  if(hO) recs=recs.filter(r=>r.outlet===hO);
+  if(hF) recs=recs.filter(r=>r.date>=hF);
+  if(hT) recs=recs.filter(r=>r.date<=hT);
+  recs.sort((a,b)=>b.date.localeCompare(a.date));
+  const wrap=document.getElementById('history-table-wrap');
+  if(!recs.length){wrap.innerHTML='<div class="empty-state"><div class="icon">📋</div><p>No records match your filters.</p></div>';return;}
+  wrap.innerHTML=`<table><thead><tr><th>Date</th><th>Country</th><th>Outlet</th><th>Score</th><th>%</th><th>Grade</th><th>Safety</th><th>Ops</th><th>Clean</th><th>Staff</th><th></th></tr></thead><tbody>
+  ${recs.map(r=>`<tr><td>${formatDate(r.date)}</td><td>${r.country}</td><td>${r.outlet}</td><td><strong>${r.total}</strong>/20</td><td>${r.pct}%</td><td><span class="badge badge-${r.grade}">${r.grade}</span></td><td>${r.catScores?.['Safety & Risk Management']??'—'}/5</td><td>${r.catScores?.['Operational Standards']??'—'}/5</td><td>${r.catScores?.['Cleanliness & Maintenance']??'—'}/5</td><td>${r.catScores?.['Staff Knowledge']??'—'}/5</td><td><button class="delete-btn" onclick="deleteRecord(${r.id})">🗑</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+function deleteRecord(id){if(!confirm('Delete this audit record?')) return; saveRecords(loadRecords().filter(r=>r.id!==id)); renderHistory();}
+function formatDate(d){if(!d) return '—'; const [y,m,day]=d.split('-'); return `${day} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${y}`;}
+function exportCSV(){
+  const recs=loadRecords(); if(!recs.length){alert('No records to export.');return;}
+  const headers=['Date','Country','Outlet','Score','Percentage','Grade','Safety','Operations','Cleanliness','Staff','Summary'];
+  const rows=recs.map(r=>[r.date,r.country,r.outlet,r.total,r.pct+'%',r.grade,r.catScores?.['Safety & Risk Management']??'',r.catScores?.['Operational Standards']??'',r.catScores?.['Cleanliness & Maintenance']??'',r.catScores?.['Staff Knowledge']??'',`"${(r.summaryComment||'').replace(/"/g,"'")}"`]);
+  const csv=[headers,...rows].map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=`OAS_Audit_${new Date().toISOString().split('T')[0]}.csv`;a.click();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function updateDashboard(){
+  const dC=document.getElementById('d-country').value,dO=document.getElementById('d-outlet').value;
+  let recs=loadRecords();
+  if(dC) recs=recs.filter(r=>r.country===dC);
+  if(dO) recs=recs.filter(r=>r.outlet===dO);
+  recs.sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('d-audits').textContent=recs.length;
+  if(recs.length){
+    document.getElementById('d-avg').textContent=(recs.reduce((s,r)=>s+r.total,0)/recs.length).toFixed(1);
+    if(recs.length>=2){
+      const diff=recs[recs.length-1].total-recs[recs.length-2].total;
+      const el=document.getElementById('d-trend');
+      el.textContent=(diff>=0?'↑ +':'↓ ')+diff;
+      el.style.color=diff>=0?'var(--success)':'var(--danger)';
+    } else document.getElementById('d-trend').textContent='—';
+  } else{document.getElementById('d-avg').textContent='—';document.getElementById('d-trend').textContent='—';}
+  drawTrendChart(recs); drawCatBreakdown(recs); drawOutletChart(loadRecords(),dC);
+}
+function drawTrendChart(recs){
+  const ctx=document.getElementById('trend-chart').getContext('2d');
+  if(trendChart) trendChart.destroy();
+  if(!recs.length) return;
+  trendChart=new Chart(ctx,{type:'line',data:{labels:recs.map(r=>formatDate(r.date)),datasets:[{label:'Score',data:recs.map(r=>r.total),borderColor:'#1bc6b4',backgroundColor:'rgba(27,198,180,.08)',pointBackgroundColor:'#1bc6b4',pointRadius:5,tension:.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f9ab0',font:{family:'DM Sans'}},grid:{color:'rgba(255,255,255,.04)'}},y:{min:0,max:20,ticks:{color:'#7f9ab0',font:{family:'DM Sans'},stepSize:5},grid:{color:'rgba(255,255,255,.06)'}}}}});
+}
+function drawCatBreakdown(recs){
+  const el=document.getElementById('cat-breakdown');
+  if(!recs.length){el.innerHTML='<p style="color:var(--text-muted);font-size:.85rem;padding:12px">No data available.</p>';return;}
+  const catColorMap={"Safety & Risk Management":"#e85d5d","Operational Standards":"#1bc6b4","Cleanliness & Maintenance":"#f4c542","Staff Knowledge":"#a78bfa"};
+  el.innerHTML=CATEGORIES.map(cat=>{const avg=(recs.reduce((s,r)=>s+(r.catScores?.[cat.name]??0),0)/recs.length).toFixed(1);return`<div class="breakdown-item"><div class="cat-name">${cat.name}</div><div class="cat-val" style="color:${catColorMap[cat.name]}">${avg} / 5</div><div class="progress-bar" style="margin-top:8px"><div class="progress-fill" style="width:${(avg/5)*100}%;background:${catColorMap[cat.name]}"></div></div></div>`}).join('');
+}
+function drawOutletChart(allRecs,country){
+  const ctx=document.getElementById('outlet-chart').getContext('2d');
+  if(outletChart) outletChart.destroy();
+  const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-3);
+  let filtered=allRecs.filter(r=>r.date>=cutoff.toISOString().split('T')[0]);
+  if(country) filtered=filtered.filter(r=>r.country===country);
+  if(!filtered.length) return;
+  const outlets=[...new Set(filtered.map(r=>r.outlet))];
+  const avgs=outlets.map(o=>{const recs=filtered.filter(r=>r.outlet===o);return+(recs.reduce((s,r)=>s+r.total,0)/recs.length).toFixed(1);});
+  const colors=['#1bc6b4','#f4c542','#a78bfa','#e85d5d','#2dd4a0','#60a5fa','#fb923c','#f472b6','#34d399'];
+  outletChart=new Chart(ctx,{type:'bar',data:{labels:outlets,datasets:[{label:'Avg Score',data:avgs,backgroundColor:outlets.map((_,i)=>colors[i%colors.length]+'cc'),borderColor:outlets.map((_,i)=>colors[i%colors.length]),borderWidth:1.5,borderRadius:6}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#7f9ab0',font:{family:'DM Sans'}},grid:{display:false}},y:{min:0,max:20,ticks:{color:'#7f9ab0',stepSize:5},grid:{color:'rgba(255,255,255,.06)'}}}}});
+}
+
+// ============================================================
+// PDF GENERATOR (client-side via jsPDF)
+// ============================================================
+function pdfGradeColor(g,doc){
+  const m={A:[45,212,160],B:[27,198,180],C:[244,197,66],D:[232,93,93]};
+  return m[g]||[127,154,176];
+}
+
+async function generatePDF(){
+  const country=document.getElementById('pdf-country').value;
+  const outlet=document.getElementById('pdf-outlet').value;
+  const rangeMonths=parseInt(document.getElementById('pdf-range').value);
+  const status=document.getElementById('pdf-status');
+  status.textContent='⏳ Building report…';
+
+  let recs=loadRecords();
+  if(!recs.length){alert('No audit records found. Please complete and save at least one audit first.');status.textContent='';return;}
+  if(country) recs=recs.filter(r=>r.country===country);
+  if(outlet) recs=recs.filter(r=>r.outlet===outlet);
+  if(rangeMonths>0){
+    const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-rangeMonths);
+    recs=recs.filter(r=>r.date>=cutoff.toISOString().split('T')[0]);
+  }
+  if(!recs.length){alert('No records match the selected filters.');status.textContent='';return;}
+  recs.sort((a,b)=>b.date.localeCompare(a.date));
+
+  const {jsPDF}=window.jspdf;
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const PW=210,PH=297,ML=16,MR=16,CW=PW-ML-MR;
+  let y=ML;
+
+  // ---- HELPERS ----
+  const C={
+    navy:[13,27,42],navyMid:[27,46,69],navyLight:[20,38,58],
+    teal:[27,198,180],gold:[244,197,66],
+    danger:[232,93,93],success:[45,212,160],purple:[167,139,250],
+    text:[232,237,242],muted:[127,154,176],white:[255,255,255],
+    lightBg:[18,36,54]
+  };
+  const gc=g=>({A:C.success,B:C.teal,C:C.gold,D:C.danger}[g]||C.muted);
+  const sf=c=>doc.setFillColor(...c);
+  const sd=c=>doc.setDrawColor(...c);
+  const st=c=>doc.setTextColor(...c);
+  const checkY=(need=20,forceNew=false)=>{if(forceNew||y+need>PH-14) newPage();};
+
+  function drawBg(){
+    sf(C.navy);doc.rect(0,0,PW,PH,'F');
+    sf(C.navyLight);doc.rect(0,0,PW,6,'F');
+    doc.rect(0,PH-6,PW,6,'F');
+  }
+
+  function newPage(){doc.addPage();y=ML+2;drawBg();}
+
+  function hRule(col=C.navyMid,w=0.4){
+    sd(col);doc.setLineWidth(w);
+    doc.line(ML,y,ML+CW,y);y+=5;
+  }
+
+  function sectionBanner(txt,bgColor=C.navyMid,textColor=C.teal){
+    checkY(12);
+    sf(bgColor);doc.roundedRect(ML,y,CW,9,1.5,1.5,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8.5);st(textColor);
+    doc.text(txt.toUpperCase(),ML+5,y+6.2);y+=12;
+  }
+
+  // ---- COVER ----
+  drawBg();
+  // Top accent bar
+  sf(C.teal);doc.rect(0,0,PW,1.5,'F');
+
+  // Title block
+  sf([20,50,70]);doc.roundedRect(ML,18,CW,36,3,3,'F');
+  sd(C.teal);doc.setLineWidth(0.8);doc.roundedRect(ML,18,CW,36,3,3,'S');
+  doc.setFont('helvetica','bold');doc.setFontSize(20);st(C.teal);
+  doc.text('OAS OPERATIONAL AUDIT REPORT',ML+CW/2,31,{align:'center'});
+  doc.setFont('helvetica','normal');doc.setFontSize(9.5);st(C.muted);
+  const scopeLabel=outlet?`${outlet}  •  ${country||'All Countries'}`:country?`${country}  •  All Outlets`:'All Countries  •  All Outlets';
+  doc.text(scopeLabel,ML+CW/2,39,{align:'center'});
+  const rangeLabel=rangeMonths===0?'All Time':`Last ${rangeMonths} Month${rangeMonths>1?'s':''}`;
+  doc.text(`Period: ${rangeLabel}  •  Generated: ${formatDate(new Date().toISOString().split('T')[0])}`,ML+CW/2,47,{align:'center'});
+  y=62;
+
+  // KPI row
+  const avgScore=(recs.reduce((s,r)=>s+r.total,0)/recs.length).toFixed(1);
+  const avgPct=Math.round(recs.reduce((s,r)=>s+r.pct,0)/recs.length);
+  const overallGrade=avgPct>=90?'A':avgPct>=75?'B':avgPct>=60?'C':'D';
+  const kpis=[
+    {label:'Total Audits',val:String(recs.length),color:C.teal},
+    {label:'Avg Score',val:`${avgScore}/20`,color:C.success},
+    {label:'Avg Pass Rate',val:`${avgPct}%`,color:C.gold},
+    {label:'Overall Grade',val:overallGrade,color:gc(overallGrade)},
+  ];
+  const kbw=(CW-9)/4;
+  kpis.forEach((k,i)=>{
+    sf(C.navyMid);sd(k.color);doc.setLineWidth(0.5);
+    doc.roundedRect(ML+i*(kbw+3),y,kbw,22,2,2,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(15);st(k.color);
+    doc.text(k.val,ML+i*(kbw+3)+kbw/2,y+13,{align:'center'});
+    doc.setFont('helvetica','normal');doc.setFontSize(7);st(C.muted);
+    doc.text(k.label.toUpperCase(),ML+i*(kbw+3)+kbw/2,y+20,{align:'center'});
+  });
+  y+=28;
+
+  // Grade distribution
+  sectionBanner('Grade Distribution',C.navyMid,C.teal);
+  const gDist=[['A — Excellent  ≥ 90%',recs.filter(r=>r.grade==='A').length,C.success],['B — Good  75–89%',recs.filter(r=>r.grade==='B').length,C.teal],['C — Fair  60–74%',recs.filter(r=>r.grade==='C').length,C.gold],['D — Poor  < 60%',recs.filter(r=>r.grade==='D').length,C.danger]];
+  gDist.forEach(([lbl,cnt,col])=>{
+    checkY(9);
+    sf(C.lightBg);doc.roundedRect(ML,y,CW,7.5,1,1,'F');
+    if(cnt>0){sf(col);doc.roundedRect(ML,y,CW*Math.max(cnt/recs.length,.02),7.5,1,1,'F');}
+    doc.setFont('helvetica','bold');doc.setFontSize(8);st(C.white);
+    doc.text(`${lbl}: ${cnt} audit${cnt!==1?'s':''}`,ML+4,y+5.3);y+=9;
+  });
+  y+=4;
+
+  // Category averages
+  sectionBanner('Average Category Scores',C.navyMid,C.teal);
+  const catColorArr={"Safety & Risk Management":C.danger,"Operational Standards":C.teal,"Cleanliness & Maintenance":C.gold,"Staff Knowledge":C.purple};
+  CATEGORIES.forEach(cat=>{
+    checkY(9);
+    const avg=recs.reduce((s,r)=>s+(r.catScores?.[cat.name]??0),0)/recs.length;
+    sf(C.lightBg);doc.roundedRect(ML,y,CW,7.5,1,1,'F');
+    sf(catColorArr[cat.name]||C.teal);doc.roundedRect(ML,y,CW*(avg/5),7.5,1,1,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(8);st(C.white);
+    doc.text(`${cat.name}: ${avg.toFixed(1)} / 5  (${Math.round(avg/5*100)}%)`,ML+4,y+5.3);y+=9;
+  });
+  y+=4;
+
+  // Outlet summary table
+  const uniqueOutlets=[...new Set(recs.map(r=>r.outlet))];
+  if(uniqueOutlets.length>1){
+    sectionBanner('Outlet Summary',C.navyMid,C.teal);
+    // Table header
+    sf(C.teal);doc.rect(ML,y,CW,7,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(7.5);st(C.navy);
+    const cols=[ML+3,ML+55,ML+75,ML+95,ML+115,ML+135,ML+160];
+    ['Outlet','Country','Audits','Avg Score','Avg %','Grade','Best Score'].forEach((h,i)=>doc.text(h,cols[i],y+5));
+    y+=8;
+    uniqueOutlets.forEach((o,idx)=>{
+      checkY(8);
+      const orecs=recs.filter(r=>r.outlet===o);
+      const oAvg=(orecs.reduce((s,r)=>s+r.total,0)/orecs.length).toFixed(1);
+      const oPct=Math.round(orecs.reduce((s,r)=>s+r.pct,0)/orecs.length);
+      const oGrade=oPct>=90?'A':oPct>=75?'B':oPct>=60?'C':'D';
+      const oMax=Math.max(...orecs.map(r=>r.total));
+      sf(idx%2===0?C.lightBg:C.navyMid);doc.rect(ML,y,CW,7,'F');
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);st(C.text);
+      [o,orecs[0].country,orecs.length,oAvg+'/20',oPct+'%',oGrade,oMax+'/20'].forEach((v,i)=>{
+        if(i===5){st(gc(oGrade));doc.setFont('helvetica','bold');}
+        else{st(C.text);doc.setFont('helvetica','normal');}
+        doc.text(String(v),cols[i],y+5);
+      });
+      y+=7.5;
+    });
+    y+=6;
+  }
+
+  // ---- DETAILED RECORDS ----
+  newPage();
+  sectionBanner('Detailed Audit Records',C.teal,C.navy);
+  y+=2;
+
+  for(const outletName of uniqueOutlets){
+    const outletRecs=recs.filter(r=>r.outlet===outletName);
+    checkY(20);
+    sf(C.navyMid);sd(C.teal);doc.setLineWidth(0.5);
+    doc.roundedRect(ML,y,CW,10,1.5,1.5,'FD');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);st(C.teal);
+    doc.text(`${outletRecs[0].country}  ›  ${outletName}`,ML+5,y+7);y+=14;
+
+    for(const rec of outletRecs){
+      checkY(45);
+      // Record header
+      sf(C.navyLight);doc.roundedRect(ML,y,CW,10,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(9);st(C.text);
+      doc.text(`Audit Date: ${formatDate(rec.date)}`,ML+4,y+7);
+      // Score chip
+      const gc2=gc(rec.grade);
+      sf(gc2);doc.roundedRect(ML+CW-32,y+1.5,30,7,1,1,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(8);st(C.navy);
+      doc.text(`Score ${rec.total}/20  Grade ${rec.grade}`,ML+CW-17,y+6.5,{align:'center'});
+      y+=13;
+
+      // Category bars
+      CATEGORIES.forEach(cat=>{
+        checkY(8);
+        const sc=rec.catScores?.[cat.name]??0;
+        sf(C.lightBg);doc.roundedRect(ML+2,y,CW-4,6,1,1,'F');
+        sf(catColorArr[cat.name]||C.teal);doc.roundedRect(ML+2,y,(CW-4)*(sc/5),6,1,1,'F');
+        doc.setFont('helvetica','normal');doc.setFontSize(7.5);st(C.white);
+        doc.text(`${cat.name}: ${sc}/5`,ML+5,y+4.3);y+=7.5;
+      });
+      y+=2;
+
+      // Issues (NO answers)
+      const noItems=(rec.qDetails||[]).filter(q=>q.answer==='no');
+      if(noItems.length){
+        checkY(12);
+        doc.setFont('helvetica','bold');doc.setFontSize(8.5);st(C.danger);
+        doc.text(`Issues Found (${noItems.length}):`,ML+4,y);y+=6;
+        noItems.forEach(q=>{
+          const remarkText=q.remark?q.remark:'No remark provided.';
+          const remarkLines=doc.splitTextToSize(`Remark: ${remarkText}`,CW-18);
+          const boxH=12+remarkLines.length*4.2;
+          checkY(boxH+4);
+          sf([40,18,18]);sd(C.danger);doc.setLineWidth(0.35);
+          doc.roundedRect(ML+4,y,CW-8,boxH,1,1,'FD');
+          doc.setFont('helvetica','bold');doc.setFontSize(8);st(C.danger);
+          const qLine=doc.splitTextToSize(`Q${q.num}: ${q.question}`,CW-18);
+          qLine.forEach((l,li)=>{doc.text(l,ML+7,y+5.5+li*4);});
+          const qH=qLine.length*4;
+          doc.setFont('helvetica','italic');doc.setFontSize(7.5);st(C.muted);
+          remarkLines.forEach((l,li)=>{checkY(5);doc.text(l,ML+7,y+5.5+qH+li*4.2);});
+          y+=boxH+4;
+
+          // Photos
+          if(q.photos&&q.photos.length>0){
+            const thumbSz=28;
+            let px=ML+7;
+            let rowStarted=false;
+            for(let pi=0;pi<Math.min(q.photos.length,4);pi++){
+              if(!rowStarted){checkY(thumbSz+5);rowStarted=true;}
+              try{
+                doc.addImage(q.photos[pi],'JPEG',px,y,thumbSz,thumbSz,undefined,'MEDIUM');
+                px+=thumbSz+3;
+                if(px>ML+CW-thumbSz-3){px=ML+7;y+=thumbSz+3;rowStarted=false;}
+              }catch(err){}
+            }
+            if(rowStarted) y+=thumbSz+5;
+          }
+        });
+      }
+
+      // Summary comment
+      if(rec.summaryComment){
+        const lines=doc.splitTextToSize(rec.summaryComment,CW-14);
+        const bh=11+lines.length*4.5;
+        checkY(bh+4);
+        sf(C.lightBg);sd(C.teal);doc.setLineWidth(0.35);
+        doc.roundedRect(ML,y,CW,bh,1.5,1.5,'FD');
+        doc.setFont('helvetica','bold');doc.setFontSize(8);st(C.teal);
+        doc.text('Summary Comment:',ML+4,y+6.5);
+        doc.setFont('helvetica','normal');st(C.text);
+        lines.forEach((l,li)=>{doc.text(l,ML+4,y+11+li*4.5);});
+        y+=bh+6;
+      }
+      hRule(C.navyMid,0.25);y+=2;
+    }
+    y+=4;
+  }
+
+  // Page footers
+  const totalPages=doc.internal.getNumberOfPages();
+  for(let p=1;p<=totalPages;p++){
+    doc.setPage(p);
+    sf(C.lightBg);doc.rect(0,PH-6,PW,6,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(7);st(C.muted);
+    doc.text('OAS Operational Audit System  •  Confidential',ML,PH-2);
+    doc.text(`Page ${p} of ${totalPages}`,PW-MR,PH-2,{align:'right'});
+  }
+
+  const fname=`OAS_Audit_${(outlet||country||'All').replace(/\s+/g,'_')}_${new Date().toISOString().split('T')[0]}.pdf`;
+  doc.save(fname);
+  status.textContent=`✓ Downloaded: ${fname}`;
+  setTimeout(()=>status.textContent='',6000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildQuestions();
+</script>
+</body>
+</html>
